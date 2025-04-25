@@ -69,7 +69,12 @@ async function addCollarino() {
 async function updateQty() {
   const search = document.getElementById("searchCode").value.trim().toLowerCase();
   const amount = parseInt(document.getElementById("adjustQty").value);
+  const sign = document.getElementById("adjustSign").value; // Ottieni il valore del selettore
+
   if (!search || isNaN(amount)) return alert("Inserisci nome o codice e quantità valida");
+
+  // Se l'utente ha selezionato "-" applica la quantità negativa
+  const adjustedAmount = sign === "minus" ? -amount : amount;
 
   const q = query(collection(db, "collarini"));
   const snapshot = await getDocs(q);
@@ -85,7 +90,7 @@ async function updateQty() {
   if (matching.length === 0) return alert("Collarino non trovato.");
   if (matching.length === 1) {
     const data = matching[0];
-    const newQty = (data.qty || 0) + amount;
+    const newQty = (data.qty || 0) + adjustedAmount; // Usa la quantità aggiustata
     await updateDoc(doc(db, "collarini", data.code), {
       qty: newQty,
       lastModifiedBy: localStorage.getItem("nomeUtente")
@@ -94,7 +99,7 @@ async function updateQty() {
   }
 
   mostraScelte(matching, async selected => {
-    const newQty = (selected.qty || 0) + amount;
+    const newQty = (selected.qty || 0) + adjustedAmount; // Usa la quantità aggiustata
     await updateDoc(doc(db, "collarini", selected.code), {
       qty: newQty,
       lastModifiedBy: localStorage.getItem("nomeUtente")
@@ -102,6 +107,7 @@ async function updateQty() {
     aggiornaLista();
   });
 }
+
 
 async function calcolaDaPeso() {
   const search = document.getElementById("calcCode").value.trim().toLowerCase();
@@ -174,6 +180,9 @@ async function aggiornaLista() {
   });
 }
 
+
+
+
 function apriModale(collarino) {
   document.getElementById("editName").value = collarino.name;
   document.getElementById("editCode").value = collarino.code;
@@ -230,6 +239,8 @@ function mostraScelte(collarini, callback) {
   document.getElementById("selezioneModal").style.display = "flex";
 }
 
+
+
 window.addCollarino = addCollarino;
 window.updateQty = updateQty;
 window.calcolaDaPeso = calcolaDaPeso;
@@ -238,4 +249,6 @@ window.chiudiModale = chiudiModale;
 window.salvaModifiche = salvaModifiche;
 window.eliminaSenzaConferma = eliminaSenzaConferma;
 
+
 window.onload = aggiornaLista;
+

@@ -2,68 +2,86 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>Inventario Collarini</title>
   <link rel="stylesheet" href="style.css" />
-   <link rel="manifest" href="manifest.json" />
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
 </head>
 <body>
+
   <h1>Gestione Inventario Collarini</h1>
 
+  <!-- Aggiungi Collarino -->
   <section>
     <h2>Aggiungi Collarino</h2>
-    <input type="text" id="newName" placeholder="Nome">
-    <input type="text" id="newCode" placeholder="Codice">
-    <input type="number" id="newQty" placeholder="Quantità iniziale">
-    <label><input type="checkbox" id="qrVecchio"> QR Vecchio</label>
-    <button onclick="addCollarino()">Aggiungi</button>
+    <form id="addCollarinoForm">
+      <input type="text" id="newName" placeholder="Nome" aria-label="Nome collarino" required>
+      <input type="text" id="newCode" placeholder="Codice" aria-label="Codice collarino" required>
+      <input type="number" id="newQty" placeholder="Quantità iniziale" aria-label="Quantità iniziale" required>
+      <label>
+        <input type="checkbox" id="qrVecchio" aria-label="QR Vecchio"> QR Vecchio
+      </label>
+      <button type="button" onclick="addCollarino()">Aggiungi</button>
+    </form>
   </section>
 
+  <!-- Aggiorna Quantità -->
   <section>
     <h2>Aggiorna Quantità</h2>
-    <input type="text" id="searchCode" placeholder="Nome o Codice">
-    <input type="number" id="adjustQty" placeholder="+ o - quantità">
-    <button onclick="updateQty()">Applica</button>
+    <form id="updateQtyForm">
+      <input type="text" id="searchCode" placeholder="Nome o Codice" aria-label="Cerca nome o codice" required="">
+      
+      <div class="qty-container">
+        <input type="number" id="adjustQty" placeholder="Quantità" aria-label="Quantità da aggiungere o sottrarre" required="">
+        
+        <select id="adjustSign" aria-label="Seleziona se aggiungere o sottrarre">
+          <option value="plus">+</option>
+          <option value="minus">-</option>
+        </select>
+      </div>
+      
+      <button type="button" onclick="updateQty()">Applica</button>
+    </form>
   </section>
+  
 
+  <!-- Aggiungi da peso -->
   <section>
-    <h2>Aggiungi da peso</h2>
-    <input type="text" id="calcCode" placeholder="Nome o Codice">
-    <input type="number" id="weightInput" placeholder="Peso in kg">
-    <button onclick="calcolaDaPeso()">Calcola e Aggiungi</button>
+    <h2>Aggiungi da Peso</h2>
+    <form id="weightForm">
+      <input type="text" id="calcCode" placeholder="Nome o Codice" aria-label="Nome o codice collarino da peso" required>
+      <input type="number" id="weightInput" placeholder="Peso in kg" aria-label="Peso in kg" required>
+      <button type="button" onclick="calcolaDaPeso()">Calcola e Aggiungi</button>
+    </form>
   </section>
 
+  <!-- Inventario -->
   <section>
     <h2>Inventario</h2>
-    <input type="text" id="liveSearch" oninput="aggiornaLista()" placeholder="Cerca...">
+    <input type="text" id="liveSearch" oninput="aggiornaLista()" placeholder="Cerca..." aria-label="Cerca collarini">
     <label><input type="checkbox" id="filtroBassoStock" onchange="aggiornaLista()"> Solo da ordinare</label>
     <label><input type="checkbox" id="filtroQrVecchio" onchange="aggiornaLista()"> QR vecchio</label>
     <div id="inventoryList"></div>
   </section>
 
-  <section>
-    <h2>Backup</h2>
-    <button onclick="exportaInventario()">Esporta</button>
-    <input type="file" id="importFile" onchange="importaInventario()">
-  </section>
-
-  <!-- MODAL EDIT COLLARINO -->
+  <!-- Modale per Modifica Collarino -->
   <div id="editModal" class="modal">
     <div class="modal-content">
       <span class="close-modal" onclick="chiudiModale()">×</span>
       <h3>Modifica Collarino</h3>
-      <input type="text" id="editName" placeholder="Nome">
-      <input type="text" id="editCode" placeholder="Codice">
+      <input type="text" id="editName" placeholder="Nome" required>
+      <input type="text" id="editCode" placeholder="Codice" required>
       <label><input type="checkbox" id="editQrVecchio"> QR Vecchio</label>
-      <button onclick="salvaModifiche()">Salva</button>
-      <button style="background-color: #cc0000;" onclick="eliminaSenzaConferma()">Elimina</button>
+      <button type="button" onclick="salvaModifiche()">Salva</button>
+      <button type="button" style="background-color: #cc0000;" onclick="eliminaSenzaConferma()">Elimina</button>
     </div>
   </div>
 
-  <!-- MODALE SELEZIONE COLLARINO -->
+  <!-- Modale Selezione Collarino -->
   <div id="selezioneModal" class="modal">
     <div class="modal-content">
       <h3>Seleziona Collarino</h3>
@@ -71,7 +89,9 @@
     </div>
   </div>
 
-  <script src="script.js" type="module"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script type="module" src="script.js"></script>
   <script type="module" src="main.js"></script>
+
 </body>
 </html>

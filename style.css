@@ -1,20 +1,33 @@
- font-family: Arial, sans-serif;
+body {
+  font-family: Arial, sans-serif;
   margin: 0;
   padding: 1rem;
   background-color: #f9f9f9;
   color: #333;
+  overflow-x: hidden; /* Prevenzione dello scroll orizzontale */
+  -ms-overflow-style: none;  /* Per disabilitare la scrollbar su IE */
+  scrollbar-width: none;  /* Per Firefox */
+  transition: background-color 0.3s ease; /* Transizione per il cambio di colore di sfondo */
+}
+
+/* Impedire zoom su dispositivi mobili (iPhone e simili) */
+@viewport {
+  user-scalable: no;
+  width: device-width;
+  initial-scale: 1;
 }
 
 @supports (-webkit-touch-callout: none) {
-  /* Questo colpisce i dispositivi iOS */
   input, textarea {
-    font-size: 16px !important; /* Impedisce lo zoom */
+    font-size: 16px !important;
   }
 }
 
 h1 {
   text-align: center;
   margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  transition: font-size 0.3s ease; /* Animazione su cambio di dimensione */
 }
 
 section {
@@ -23,6 +36,9 @@ section {
   border-radius: 8px;
   margin-bottom: 1rem;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transform: translateY(0);
+  opacity: 0;
+  animation: fadeIn 0.5s ease-out forwards; /* Animazione di apparizione */
 }
 
 input[type="text"],
@@ -35,17 +51,14 @@ input[type="file"] {
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Animazione di focus */
 }
 
-input, textarea, select {
-  font-size: 16px;
-}
-
-label {
-  display: inline-flex;
-  align-items: center;
-  margin-right: 1rem;
-  font-size: 0.95rem;
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="file"]:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
 button {
@@ -58,10 +71,16 @@ button {
   font-size: 0.95rem;
   margin-right: 0.5rem;
   margin-bottom: 0.5rem;
+  transition: background-color 0.3s ease, transform 0.3s ease; /* Transizione del colore e animazione di spostamento */
 }
 
 button:hover {
   background-color: #0056b3;
+  transform: translateY(-3px); /* Sollevamento al passaggio del mouse */
+}
+
+button:active {
+  transform: translateY(1px); /* Effetto di pressione */
 }
 
 .item {
@@ -71,17 +90,42 @@ button:hover {
   border-radius: 5px;
   background-color: #fff;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease; /* Animazione di hover */
+  max-width: 100%;
 }
 
 .item:hover {
   background-color: #f1f1f1;
+  transform: scale(1.02); /* Leggera ingrandimento al passaggio del mouse */
+}
+
+.item .name {
+  display: block;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item .tags {
+  margin-top: 0.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .warning {
-  color: #cc0000;
-  font-weight: bold;
+  background-color: #dc3545;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
   margin-left: 10px;
+  transition: transform 0.3s ease;
 }
 
 .tag {
@@ -90,13 +134,24 @@ button:hover {
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
   font-size: 0.8rem;
-  margin-left: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.tag:hover {
+  transform: scale(1.1); /* Leggera animazione di zoom sulla tag */
 }
 
 .mod-info {
   font-size: 0.8rem;
   color: #666;
   margin-top: 0.4rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .modal {
@@ -107,10 +162,11 @@ button:hover {
   top: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,0.4);
+  background-color: rgba(0, 0, 0, 0.4);
   justify-content: center;
   align-items: center;
   padding: 1rem;
+  animation: modalFadeIn 0.3s ease-out forwards;
 }
 
 .modal-content {
@@ -121,6 +177,7 @@ button:hover {
   width: 100%;
   box-sizing: border-box;
   position: relative;
+  animation: slideUp 0.3s ease-out forwards;
 }
 
 .close-modal {
@@ -139,15 +196,46 @@ button:hover {
   color: #333;
   font-size: 1rem;
   text-align: left;
+  transition: background-color 0.3s ease;
 }
 
 #scelteDuplicati button:hover {
   background-color: #d4d9df;
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 600px) {
   h1 {
     font-size: 1.5rem;
+    transition: font-size 0.3s ease;
   }
 
   section {
@@ -162,4 +250,28 @@ button:hover {
   .modal-content {
     max-width: 90%;
   }
+
+  input, textarea, select {
+    font-size: 16px;
+  }
+}
+
+.qty-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#adjustQty {
+  width: 70%;
+  padding: 0.6rem;
+}
+
+#adjustSign {
+  padding: 0.6rem;
+  width: 30%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: #fff;
 }

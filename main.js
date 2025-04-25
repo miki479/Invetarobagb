@@ -1,5 +1,6 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-messaging.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js";
+import { getMessaging, getToken, onMessage, useServiceWorker } from "https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js";
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyD2LEAWh-YprhDjKC_jNwAasLDWFhbzPMw",
@@ -15,7 +16,18 @@ const messaging = getMessaging(app);
 
 // Registrazione service worker
 navigator.serviceWorker.register('/firebase-messaging-sw.js').then((registration) => {
-  messaging.useServiceWorker(registration);
+  // Configura il service worker con Firebase Messaging
+  setBackgroundMessageHandler(messaging, (payload) => {
+    console.log('Messaggio in background:', payload);
+    // Puoi personalizzare la gestione della notifica qui
+    const notificationTitle = payload.notification.title;
+    const notificationOptions = {
+      body: payload.notification.body,
+      icon: '/icons/icon-192.png',
+    };
+
+    return self.registration.showNotification(notificationTitle, notificationOptions);
+  });
 
   // Chiedi permesso per le notifiche
   Notification.requestPermission().then((permission) => {
