@@ -1,0 +1,154 @@
+ font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 1rem;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+section {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+input[type="text"],
+input[type="number"],
+input[type="file"] {
+  display: block;
+  width: 100%;
+  padding: 0.6rem;
+  margin-bottom: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+label {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 1rem;
+  font-size: 0.95rem;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.item {
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  margin-bottom: 0.5rem;
+  border-radius: 5px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.item:hover {
+  background-color: #f1f1f1;
+}
+
+.warning {
+  color: #cc0000;
+  font-weight: bold;
+  margin-left: 10px;
+}
+
+.tag {
+  background-color: #ffc107;
+  color: #333;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  margin-left: 10px;
+}
+
+.mod-info {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 0.4rem;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.4);
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.close-modal {
+  position: absolute;
+  right: 1rem;
+  top: 0.8rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+#scelteDuplicati button {
+  display: block;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  background-color: #e9ecef;
+  color: #333;
+  font-size: 1rem;
+  text-align: left;
+}
+
+#scelteDuplicati button:hover {
+  background-color: #d4d9df;
+}
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  section {
+    padding: 0.8rem;
+  }
+
+  button {
+    width: 100%;
+    margin-bottom: 0.8rem;
+  }
+
+  .modal-content {
+    max-width: 90%;
+  }
+}

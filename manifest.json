@@ -1,0 +1,16 @@
+{
+  "name": "Inventario fusti",
+  "short_name": "Inventario",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff8c00",
+  "description": "App per la gestione dell'inventario dei collarini",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
