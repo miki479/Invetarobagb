@@ -19,6 +19,19 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// Registriamo il Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then((registration) => {
+        console.log('Service Worker registrato con successo:', registration);
+      })
+      .catch((error) => {
+        console.log('Errore nel registrare il Service Worker:', error);
+      });
+  });
+}
+
 if (!localStorage.getItem("nomeUtente")) {
   const nomeUtente = prompt("Inserisci il tuo nome:");
   localStorage.setItem("nomeUtente", nomeUtente || "Anonimo");
