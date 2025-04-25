@@ -5,6 +5,13 @@
   color: #333;
 }
 
+@supports (-webkit-touch-callout: none) {
+  /* Questo colpisce i dispositivi iOS */
+  input, textarea {
+    font-size: 16px !important; /* Impedisce lo zoom */
+  }
+}
+
 h1 {
   text-align: center;
   margin-bottom: 1.5rem;
@@ -28,6 +35,10 @@ input[type="file"] {
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
+}
+
+input, textarea, select {
+  font-size: 16px;
 }
 
 label {
