@@ -13,71 +13,143 @@
 </head>
 <body>
 
-  <h1>Gestione Inventario Collarini</h1>
+  <header class="app-header">
+    <h1>Inventario Collarini</h1>
+    <div class="user-badge" id="userBadge"></div>
+  </header>
 
-  <!-- Aggiungi Collarino -->
-  <section>
-    <h2>Aggiungi Collarino</h2>
-    <form id="addCollarinoForm">
-      <input type="text" id="newName" placeholder="Nome" aria-label="Nome collarino" required>
-      <input type="text" id="newCode" placeholder="Codice" aria-label="Codice collarino" required>
-      <input type="number" id="newQty" placeholder="Quantità iniziale" aria-label="Quantità iniziale" required>
-      <label>
-        <input type="checkbox" id="qrVecchio" aria-label="QR Vecchio"> QR Vecchio
-      </label>
-      <button type="button" onclick="addCollarino()">Aggiungi</button>
-    </form>
-  </section>
+  <main class="app-container">
+    <!-- Dashboard -->
+    <section class="dashboard-section">
+      <h2 class="section-toggle" data-target="dashboardContent">
+        Dashboard <span class="toggle-icon">▼</span>
+      </h2>
+      <div id="dashboardContent" class="section-content">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-value" id="totalItems">0</span>
+            <span class="stat-label">Totali</span>
+          </div>
+          <div class="stat-card warning">
+            <span class="stat-value" id="lowStockItems">0</span>
+            <span class="stat-label">Da ordinare</span>
+          </div>
+          <div class="stat-card alert">
+            <span class="stat-value" id="oldQrItems">0</span>
+            <span class="stat-label">QR Vecchi</span>
+          </div>
+          <div class="stat-card info">
+            <span class="stat-value" id="activeItems">0</span>
+            <span class="stat-label">Più usati</span>
+          </div>
+        </div>
 
-  <!-- Aggiorna Quantità -->
-  <section>
-    <h2>Aggiorna Quantità</h2>
-    <form id="updateQtyForm">
-      <input type="text" id="searchCode" placeholder="Nome o Codice" aria-label="Cerca nome o codice" required="">
-      
-      <div class="qty-container">
-        <input type="number" id="adjustQty" placeholder="Quantità" aria-label="Quantità da aggiungere o sottrarre" required="">
-        
-        <select id="adjustSign" aria-label="Seleziona se aggiungere o sottrarre">
-          <option value="plus">+</option>
-          <option value="minus">-</option>
-        </select>
+        <div class="chart-container">
+          <h3>Top 5 Collarini Utilizzati</h3>
+          <canvas id="usageChart"></canvas>
+        </div>
       </div>
-      
-      <button type="button" onclick="updateQty()">Applica</button>
-    </form>
-  </section>
-  
+    </section>
 
-  <!-- Aggiungi da peso -->
-  <section>
-    <h2>Aggiungi da Peso</h2>
-    <form id="weightForm">
-      <input type="text" id="calcCode" placeholder="Nome o Codice" aria-label="Nome o codice collarino da peso" required>
-      <input type="number" id="weightInput" placeholder="Peso in kg" aria-label="Peso in kg" required>
-      <button type="button" onclick="calcolaDaPeso()">Calcola e Aggiungi</button>
-    </form>
-  </section>
+    <!-- Aggiungi Collarino -->
+    <section class="form-section">
+      <h2 class="section-toggle" data-target="addForm">
+        Aggiungi Collarino <span class="toggle-icon">▼</span>
+      </h2>
+      <div id="addForm" class="section-content">
+        <form id="addCollarinoForm">
+          <input type="text" id="newName" placeholder="Nome" aria-label="Nome collarino" required>
+          <input type="text" id="newCode" placeholder="Codice" aria-label="Codice collarino" required>
+          <input type="number" id="newQty" placeholder="Quantità iniziale" aria-label="Quantità iniziale" required>
+          <label class="checkbox-label">
+            <input type="checkbox" id="qrVecchio" aria-label="QR Vecchio"> QR Vecchio
+          </label>
+          <button type="button" class="btn-primary" id="addButton">Aggiungi</button>
+        </form>
+      </div>
+    </section>
 
-  <!-- Inventario -->
-  <section>
-    <h2>Inventario</h2>
-    <input type="text" id="liveSearch" oninput="aggiornaLista()" placeholder="Cerca..." aria-label="Cerca collarini">
-    <label><input type="checkbox" id="filtroBassoStock" onchange="aggiornaLista()"> Solo da ordinare</label>
-    <label><input type="checkbox" id="filtroQrVecchio" onchange="aggiornaLista()"> QR vecchio</label>
-    <div id="inventoryList"></div>
-  </section>
+    <!-- Aggiorna Quantità -->
+    <section class="form-section">
+      <h2 class="section-toggle" data-target="updateForm">
+        Aggiorna Quantità <span class="toggle-icon">▼</span>
+      </h2>
+      <div id="updateForm" class="section-content">
+        <form id="updateQtyForm">
+          <input type="text" id="searchCode" placeholder="Nome o Codice" aria-label="Cerca nome o codice" required>
+          <div class="qty-container">
+            <input type="number" id="adjustQty" placeholder="Quantità" aria-label="Quantità da aggiungere o sottrarre" required>
+            <select id="adjustSign" aria-label="Seleziona operazione">
+              <option value="plus">+</option>
+              <option value="minus">-</option>
+            </select>
+          </div>
+          <button type="button" class="btn-primary" id="updateButton">Applica</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Aggiungi da peso -->
+    <section class="form-section">
+      <h2 class="section-toggle" data-target="weightForm">
+        Aggiungi da Peso <span class="toggle-icon">▼</span>
+      </h2>
+      <div id="weightForm" class="section-content">
+        <form id="weightForm">
+          <input type="text" id="calcCode" placeholder="Nome o Codice" aria-label="Nome o codice collarino da peso" required>
+          <input type="number" id="weightInput" placeholder="Peso in kg" aria-label="Peso in kg" required step="0.01">
+          <button type="button" class="btn-primary" id="weightButton">Calcola e Aggiungi</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Inventario -->
+    <section class="inventory-section">
+      <h2 class="section-toggle" data-target="inventoryContent">
+        Inventario <span class="toggle-icon">▼</span>
+      </h2>
+      <div id="inventoryContent" class="section-content">
+        <div class="inventory-controls">
+          <input type="text" id="liveSearch" placeholder="Cerca..." aria-label="Cerca collarini">
+          <div class="filter-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="filtroBassoStock"> Solo da ordinare
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="filtroQrVecchio"> QR vecchio
+            </label>
+          </div>
+        </div>
+        <div id="inventoryList" class="inventory-list"></div>
+      </div>
+    </section>
+
+    <!-- Cronologia Modifiche -->
+    <section class="history-section">
+      <h2 class="section-toggle" data-target="historyContent">
+        Cronologia Modifiche <span class="toggle-icon">▼</span>
+      </h2>
+      <div id="historyContent" class="section-content">
+        <input type="text" id="historySearch" placeholder="Cerca nella cronologia...">
+        <div id="historyList" class="history-list"></div>
+      </div>
+    </section>
+  </main>
 
   <!-- Modale per Modifica Collarino -->
   <div id="editModal" class="modal">
     <div class="modal-content">
-      <span class="close-modal" onclick="chiudiModale()">×</span>
+      <span class="close-modal" id="closeModal">×</span>
       <h3>Modifica Collarino</h3>
       <input type="text" id="editName" placeholder="Nome" required>
       <input type="text" id="editCode" placeholder="Codice" required>
-      <label><input type="checkbox" id="editQrVecchio"> QR Vecchio</label>
-      <button type="button" onclick="salvaModifiche()">Salva</button>
-      <button type="button" style="background-color: #cc0000;" onclick="eliminaSenzaConferma()">Elimina</button>
+      <label class="checkbox-label">
+        <input type="checkbox" id="editQrVecchio"> QR Vecchio
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="btn-primary" id="saveButton">Salva</button>
+        <button type="button" class="btn-danger" id="deleteButton">Elimina</button>
+      </div>
     </div>
   </div>
 
@@ -85,13 +157,12 @@
   <div id="selezioneModal" class="modal">
     <div class="modal-content">
       <h3>Seleziona Collarino</h3>
-      <div id="scelteDuplicati"></div>
+      <div id="scelteDuplicati" class="selection-list"></div>
     </div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="module" src="script.js"></script>
-  <script type="module" src="main.js"></script>
-
 </body>
 </html>
