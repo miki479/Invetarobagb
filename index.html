@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimum-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
   <title>Inventario Collarini</title>
   <link rel="stylesheet" href="style.css" />
@@ -13,18 +13,77 @@
 </head>
 <body>
 
-  <header class="app-header">
-    <h1>Inventario Collarini</h1>
-    <div class="user-badge" id="userBadge"></div>
-  </header>
+  <div class="app-wrapper">
+    <!-- Menu laterale -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>Inventario</h2>
+        <div class="user-badge" id="userBadge"></div>
+      </div>
+      <nav class="sidebar-nav">
+        <ul>
+          <li class="menu-item active" data-section="inventory-section">
+            <span>📦 Inventario</span>
+          </li>
+          <li class="menu-item" data-section="dashboard-section">
+            <span>📊 Dashboard</span>
+          </li>
+          <li class="menu-item" data-section="history-section">
+            <span>🕒 Cronologia</span>
+          </li>
+          <li class="menu-item" data-section="add-section">
+            <span>➕ Aggiungi</span>
+          </li>
+          <li class="menu-item" data-section="update-section">
+            <span>🔄 Aggiorna</span>
+          </li>
+          <li class="menu-item" data-section="weight-section">
+            <span>⚖️ Da Peso</span>
+          </li>
+        </ul>
+      </nav>
+    </aside>
 
-  <main class="app-container">
-    <!-- Dashboard -->
-    <section class="dashboard-section">
-      <h2 class="section-toggle" data-target="dashboardContent">
-        Dashboard <span class="toggle-icon">▼</span>
-      </h2>
-      <div id="dashboardContent" class="section-content">
+    <!-- Contenuto principale -->
+    <main class="main-content">
+      <header class="app-header">
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <h1 id="currentSectionTitle">Inventario</h1>
+      </header>
+
+      <!-- Loader -->
+      <div id="loader" class="loader">
+        <div class="loader-spinner"></div>
+      </div>
+
+      <!-- Animazione successo -->
+      <div id="success-animation" class="success-animation">
+        <svg class="checkmark" viewBox="0 0 52 52">
+          <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+          <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+      </div>
+
+      <!-- Sezioni del contenuto -->
+      <!-- Inventario -->
+      <section id="inventory-section" class="content-section">
+        <div class="inventory-controls">
+          <input type="text" id="liveSearch" placeholder="Cerca..." aria-label="Cerca collarini">
+          <div class="filter-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="filtroBassoStock"> Solo da ordinare
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="filtroQrVecchio"> QR vecchio
+            </label>
+            <button id="copyLowStock" class="btn-copy">📋 Copia da ordinare</button>
+          </div>
+        </div>
+        <div id="inventoryList" class="inventory-list"></div>
+      </section>
+
+      <!-- Dashboard -->
+      <section id="dashboard-section" class="content-section" style="display:none">
         <div class="stats-grid">
           <div class="stat-card">
             <span class="stat-value" id="totalItems">0</span>
@@ -48,15 +107,16 @@
           <h3>Top 5 Collarini Utilizzati</h3>
           <canvas id="usageChart"></canvas>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Aggiungi Collarino -->
-    <section class="form-section">
-      <h2 class="section-toggle" data-target="addForm">
-        Aggiungi Collarino <span class="toggle-icon">▼</span>
-      </h2>
-      <div id="addForm" class="section-content">
+      <!-- Cronologia -->
+      <section id="history-section" class="content-section" style="display:none">
+        <input type="text" id="historySearch" placeholder="Cerca nella cronologia...">
+        <div id="historyList" class="history-list"></div>
+      </section>
+
+      <!-- Aggiungi Collarino -->
+      <section id="add-section" class="content-section" style="display:none">
         <form id="addCollarinoForm">
           <input type="text" id="newName" placeholder="Nome" aria-label="Nome collarino" required>
           <input type="text" id="newCode" placeholder="Codice" aria-label="Codice collarino" required>
@@ -66,15 +126,10 @@
           </label>
           <button type="button" class="btn-primary" id="addButton">Aggiungi</button>
         </form>
-      </div>
-    </section>
+      </section>
 
-    <!-- Aggiorna Quantità -->
-    <section class="form-section">
-      <h2 class="section-toggle" data-target="updateForm">
-        Aggiorna Quantità <span class="toggle-icon">▼</span>
-      </h2>
-      <div id="updateForm" class="section-content">
+      <!-- Aggiorna Quantità -->
+      <section id="update-section" class="content-section" style="display:none">
         <form id="updateQtyForm">
           <input type="text" id="searchCode" placeholder="Nome o Codice" aria-label="Cerca nome o codice" required>
           <div class="qty-container">
@@ -86,55 +141,18 @@
           </div>
           <button type="button" class="btn-primary" id="updateButton">Applica</button>
         </form>
-      </div>
-    </section>
+      </section>
 
-    <!-- Aggiungi da peso -->
-    <section class="form-section">
-      <h2 class="section-toggle" data-target="weightForm">
-        Aggiungi da Peso <span class="toggle-icon">▼</span>
-      </h2>
-      <div id="weightForm" class="section-content">
+      <!-- Aggiungi da peso -->
+      <section id="weight-section" class="content-section" style="display:none">
         <form id="weightForm">
           <input type="text" id="calcCode" placeholder="Nome o Codice" aria-label="Nome o codice collarino da peso" required>
           <input type="number" id="weightInput" placeholder="Peso in kg" aria-label="Peso in kg" required step="0.01">
           <button type="button" class="btn-primary" id="weightButton">Calcola e Aggiungi</button>
         </form>
-      </div>
-    </section>
-
-    <!-- Inventario -->
-    <section class="inventory-section">
-      <h2 class="section-toggle" data-target="inventoryContent">
-        Inventario <span class="toggle-icon">▼</span>
-      </h2>
-      <div id="inventoryContent" class="section-content">
-        <div class="inventory-controls">
-          <input type="text" id="liveSearch" placeholder="Cerca..." aria-label="Cerca collarini">
-          <div class="filter-group">
-            <label class="checkbox-label">
-              <input type="checkbox" id="filtroBassoStock"> Solo da ordinare
-            </label>
-            <label class="checkbox-label">
-              <input type="checkbox" id="filtroQrVecchio"> QR vecchio
-            </label>
-          </div>
-        </div>
-        <div id="inventoryList" class="inventory-list"></div>
-      </div>
-    </section>
-
-    <!-- Cronologia Modifiche -->
-    <section class="history-section">
-      <h2 class="section-toggle" data-target="historyContent">
-        Cronologia Modifiche <span class="toggle-icon">▼</span>
-      </h2>
-      <div id="historyContent" class="section-content">
-        <input type="text" id="historySearch" placeholder="Cerca nella cronologia...">
-        <div id="historyList" class="history-list"></div>
-      </div>
-    </section>
-  </main>
+      </section>
+    </main>
+  </div>
 
   <!-- Modale per Modifica Collarino -->
   <div id="editModal" class="modal">
