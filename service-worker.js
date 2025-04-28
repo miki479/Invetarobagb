@@ -8,7 +8,7 @@ const urlsToCache = [
   '/style.css',
   '/script.js',
   '/icons/icon-192.png',
-  
+  '/icons/icon-512x512.png',
 ];
 
 // Durante l'installazione del Service Worker, aggiungiamo i file alla cache
