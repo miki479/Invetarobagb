@@ -1,12 +1,12 @@
 :root {
   /* Schema bianco e nero */
-  --primary: #000000;
-  --primary-dark: #1a1a1a;
-  --secondary: #333333;
-  --danger: #666666;
-  --warning: #808080;
-  --success: #404040;
-  --info: #595959;
+  --primary: #3498db;
+  --primary-dark: #2980b9;
+  --secondary: #2c3e50;
+  --danger: #e74c3c;
+  --warning: #f39c12;
+  --success: #2ecc71;
+  --info: #1abc9c;
   --light: #FFFFFF;
   --dark: #000000;
   --gray: #808080;
@@ -838,4 +838,154 @@ button {
   input, select, textarea {
     font-size: 16px !important;
   }
+}
+
+#collarinoType {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  justify-content: center; /* centra su schermi piccoli */
+}
+
+#collarinoType input[type="radio"] {
+  display: none;
+}
+
+#collarinoType label {
+  background-color: #f0f0f0;
+  border: 2px solid #ccc;
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  user-select: none;
+  min-width: 120px; /* larghezza minima per tocco facile */
+  text-align: center;
+}
+
+#collarinoType input[type="radio"]:checked + label {
+  background-color: #4CAF50;
+  color: white;
+  border-color: #4CAF50;
+  transform: scale(1.05);
+}
+
+#collarinoType label:hover {
+  background-color: #e0e0e0;
+}
+
+@media (max-width: 600px) {
+  #collarinoType label {
+    padding: 15px;
+    font-size: 14px;
+    min-width: 100px;
+  }
+}
+
+
+#toast-container {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.toast {
+  background-color: #323232;
+  color: white;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  min-width: 200px;
+  text-align: center;
+  animation: fadeInOut 3s forwards;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(20px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(20px); }
+}
+
+
+#resocontoList {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.collarino-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.collarino-name {
+  flex: 1;
+  font-size: 16px;
+  font-weight: bold;
+  margin-right: 10px;
+  position: relative;
+}
+
+.collarino-bar-container {
+  flex-grow: 1;
+  margin-left: 20px;
+  height: 10px;
+  background-color: #ddd;
+  border-radius: 5px;
+  position: relative;
+}
+
+.collarino-bar {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.3s ease-in-out;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1; /* Barra sotto le etichette */
+}
+.collarino-asterisk {
+  color: red;
+  margin-left: 5px;
+  font-size: 20px;
+  vertical-align: middle;
+}
+
+
+/* Responsive */
+@media (max-width: 600px) {
+  .collarino-name {
+    font-size: 14px;
+  }
+}
+
+/* Posizionamento delle etichette MIN e MAX sopra la barra */
+.collarino-bar-labels {
+  position: absolute;
+  top: -20px; /* Sposta le etichette sopra la barra */
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #333;
+  z-index: 2; /* Assicurati che le etichette siano sopra la barra */
+}
+
+.collarino-min-label,
+.collarino-max-label {
+  display: inline-block;
 }

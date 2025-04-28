@@ -40,6 +40,9 @@
           <li class="menu-item" data-section="weight-section">
             <span>⚖️ Da Peso</span>
           </li>
+          <li class="menu-item" data-section="resoconto-section">
+            <span>📋 Resoconto</span>
+          </li>
         </ul>
       </nav>
     </aside>
@@ -148,39 +151,77 @@
         <form id="weightForm">
           <input type="text" id="calcCode" placeholder="Nome o Codice" aria-label="Nome o codice collarino da peso" required>
           <input type="number" id="weightInput" placeholder="Peso in kg" aria-label="Peso in kg" required step="0.01">
+          <div id="collarinoType">
+            <input type="radio" id="quadrato" name="collarinoType" value="3.27">
+            <label for="quadrato">Quadrato (3.27g)</label>
+          
+            <input type="radio" id="tondo" name="collarinoType" value="3.68">
+            <label for="tondo">Tondo (3.68g)</label>
+          
+            <input type="radio" id="morbido" name="collarinoType" value="1.26">
+            <label for="morbido">Morbido (1.26g)</label>
+          
+            <input type="radio" id="duro" name="collarinoType" value="2.49">
+            <label for="duro">Duro (2.49g)</label>
+          </div>
           <button type="button" class="btn-primary" id="weightButton">Calcola e Aggiungi</button>
         </form>
       </section>
-    </main>
-  </div>
 
-  <!-- Modale per Modifica Collarino -->
-  <div id="editModal" class="modal">
-    <div class="modal-content">
-      <span class="close-modal" id="closeModal">×</span>
-      <h3>Modifica Collarino</h3>
-      <input type="text" id="editName" placeholder="Nome" required>
-      <input type="text" id="editCode" placeholder="Codice" required>
-      <label class="checkbox-label">
-        <input type="checkbox" id="editQrVecchio"> QR Vecchio
-      </label>
-      <div class="modal-actions">
-        <button type="button" class="btn-primary" id="saveButton">Salva</button>
-        <button type="button" class="btn-danger" id="deleteButton">Elimina</button>
+       <!-- Resoconto -->
+       <section id="resoconto-section" class="content-section" style="display:none;">
+        <div id="resocontoList">
+          <!-- Sezione per ogni collarino -->
+          <div class="collarino-item">
+            <span class="collarino-name">Nome Collarino</span>
+            <div class="collarino-bar-container">
+              <!-- Etichette MIN e MAX -->
+              <div class="collarino-bar-labels">
+                <span class="collarino-min-label">MIN</span>
+                <span class="collarino-max-label">MAX</span>
+              </div>
+              <!-- Barra di avanzamento (la percentuale si aggiornerà dinamicamente) -->
+              <div class="collarino-bar" style="width: 75%;"></div> <!-- Cambia la larghezza in base alla quantità -->
+            </div>
+            <span class="collarino-asterisk">*</span> <!-- Asterisco se la quantità è bassa -->
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Modale per Modifica Collarino -->
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <span class="close-modal" id="closeModal">×</span>
+        <h3>Modifica Collarino</h3>
+        <input type="text" id="editName" placeholder="Nome" required>
+        <input type="text" id="editCode" placeholder="Codice" required>
+        <label class="checkbox-label">
+          <input type="checkbox" id="editQrVecchio"> QR Vecchio
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn-primary" id="saveButton">Salva</button>
+          <button type="button" class="btn-danger" id="deleteButton">Elimina</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Modale Selezione Collarino -->
-  <div id="selezioneModal" class="modal">
-    <div class="modal-content">
-      <h3>Seleziona Collarino</h3>
-      <div id="scelteDuplicati" class="selection-list"></div>
+    <!-- Modale Selezione Collarino -->
+    <div id="selezioneModal" class="modal">
+      <div class="modal-content">
+        <h3>Seleziona Collarino</h3>
+        <div id="scelteDuplicati" class="selection-list"></div>
+      </div>
     </div>
+
+    <div id="toast-container"></div>
+
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="module" src="script.js"></script>
+  
 </body>
 </html>

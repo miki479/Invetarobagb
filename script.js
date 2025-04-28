@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
 import { 
   getFirestore, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc,
-  collection, query, where, orderBy, limit, serverTimestamp 
+  collection, query, where, orderBy, limit, serverTimestamp, onSnapshot
 } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
 // Configurazione Firebase
@@ -30,7 +30,7 @@ const DOM = {
   mainContent: document.querySelector('.main-content'),
   userBadge: document.getElementById('userBadge'),
   currentSectionTitle: document.getElementById('currentSectionTitle')
-};
+ };
 
 // Utility
 const utils = {
@@ -54,6 +54,19 @@ const utils = {
   }
 };
 
+utils.showToast = function(message) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, 3000); // Sparisce dopo 3 secondi
+};
+
+
 // Gestione Menu
 const setupMenu = () => {
   DOM.menuToggle.addEventListener('click', () => {
@@ -74,16 +87,28 @@ const setupMenu = () => {
 };
 
 // Sezioni
+// Debug per verificare se la sezione viene cambiata correttamente
 const changeSection = (sectionId) => {
+  console.log("Cambio sezione a:", sectionId); // Log per monitorare la sezione
   document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
   document.getElementById(sectionId).style.display = 'block';
   document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
   document.querySelector(`.menu-item[data-section="${sectionId}"]`).classList.add('active');
   utils.updateSectionTitle(sectionId);
 
-  if (sectionId === 'inventory-section') aggiornaLista();
-  else if (sectionId === 'history-section') loadHistory();
-  else if (sectionId === 'dashboard-section') updateDashboard();
+  if (sectionId === 'inventory-section') {
+    console.log("Caricamento inventario..."); // Log per verificare la sezione inventario
+    aggiornaLista();
+  } else if (sectionId === 'history-section') {
+    console.log("Caricamento cronologia..."); // Log per verificare la sezione cronologia
+    loadHistory();
+  } else if (sectionId === 'dashboard-section') {
+    console.log("Caricamento dashboard..."); // Log per verificare la sezione dashboard
+    updateDashboard();
+  } else if (sectionId === 'resoconto-section') {
+    console.log("Caricamento resoconto..."); // Log per verificare quando si entra nella sezione resoconto
+    loadResoconto();
+  }
 };
 
 // Operazioni Database
@@ -186,18 +211,33 @@ const dbOperations = {
     utils.showLoader();
     const search = document.getElementById("calcCode").value.trim().toLowerCase();
     const pesoKg = parseFloat(document.getElementById("weightInput").value);
-
+  
     if (!search || isNaN(pesoKg)) {
       utils.hideLoader();
       return alert("Inserisci nome/codice e peso validi");
     }
-
-    const collariniDaAggiungere = Math.floor((pesoKg * 1000) / 3);
+  
+    // Prendi il tipo selezionato
+    const selectedType = document.querySelector('input[name="collarinoType"]:checked');
+    if (!selectedType) {
+      utils.hideLoader();
+      return alert("Seleziona un tipo di collarino");
+    }
+  
+    const pesoSingoloCollarino = parseFloat(selectedType.value); // esempio: 3.27
+    if (isNaN(pesoSingoloCollarino) || pesoSingoloCollarino <= 0) {
+      utils.hideLoader();
+      return alert("Peso tipo collarino non valido");
+    }
+  
+    const pesoTotaleGr = pesoKg * 1000; // converto da kg a grammi
+    const collariniDaAggiungere = Math.floor(pesoTotaleGr / pesoSingoloCollarino);
+  
     if (collariniDaAggiungere <= 0) {
       utils.hideLoader();
       return alert("Peso insufficiente per generare collarini");
     }
-
+  
     try {
       const matching = [];
       (await getDocs(query(collection(db, "collarini")))).forEach(docSnap => {
@@ -206,15 +246,20 @@ const dbOperations = {
           matching.push({ id: docSnap.id, ...data });
         }
       });
-
-      if (matching.length === 0) return alert("Nessun collarino trovato");
-      if (matching.length === 1) return await processUpdate(matching[0], collariniDaAggiungere);
-
-      mostraScelte(matching, async (selected) => {
-        await processUpdate(selected, collariniDaAggiungere);
-        document.getElementById("calcCode").value = "";
-        document.getElementById("weightInput").value = "";
-      });
+  
+      if (matching.length === 0) {
+        alert("Nessun collarino trovato");
+      } else if (matching.length === 1) {
+        await processUpdate(matching[0], collariniDaAggiungere);
+      } else {
+        mostraScelte(matching, async (selected) => {
+          await processUpdate(selected, collariniDaAggiungere);
+          document.getElementById("calcCode").value = "";
+          document.getElementById("weightInput").value = "";
+          // Se vuoi puoi anche deselezionare il tipo:
+          document.querySelectorAll('input[name="collarinoType"]').forEach(r => r.checked = false);
+        });
+      }
     } catch (error) {
       alert("Errore durante l'operazione: " + error.message);
     } finally {
@@ -224,10 +269,16 @@ const dbOperations = {
 };
 
 // Funzioni principali
+// Funzione per processare un aggiornamento in tempo reale
 async function processUpdate(collarino, amount) {
-  const newQty = collarino.qty + amount;
-  if (newQty < 0) return alert("La quantità non può essere negativa");
+  let newQty = collarino.qty + amount;
 
+  if (newQty < 0) {
+    newQty = 0;
+    utils.showToast("Tipo di collarino terminato");
+  }
+
+  // Aggiorna il documento in Firestore
   await updateDoc(doc(db, "collarini", collarino.id), {
     qty: newQty,
     lastModifiedBy: localStorage.getItem("nomeUtente"),
@@ -236,16 +287,18 @@ async function processUpdate(collarino, amount) {
   });
 
   await logAction("update", collarino.id, { oldQty: collarino.qty, newQty, change: amount });
-  
+
   recentModified = recentModified.filter(c => c.id !== collarino.id);
   recentModified.unshift({ ...collarino, qty: newQty });
   if (recentModified.length > 5) recentModified.pop();
 
+  // Aggiorna la lista e dashboard in tempo reale
   await aggiornaLista();
   await updateDashboard();
   utils.showSuccess();
 }
 
+// Funzione aggiornata per caricare e monitorare l'inventario in tempo reale
 async function aggiornaLista() {
   utils.showLoader();
   const searchTerm = document.getElementById("liveSearch")?.value.toLowerCase() || "";
@@ -257,39 +310,53 @@ async function aggiornaLista() {
     const container = document.getElementById("inventoryList");
     container.innerHTML = "";
 
+    // Aggiungi la sezione per gli articoli modificati recentemente
     if (recentModified.length > 0) {
       const recentSection = document.createElement('div');
       recentSection.className = 'recent-section';
       recentSection.innerHTML = '<h3>Modificati di recente</h3><div class="recent-container"></div>';
-      
       recentModified.forEach(c => {
         recentSection.querySelector('.recent-container').appendChild(createCollarinoItem(c));
       });
       container.appendChild(recentSection);
     }
 
-    (await getDocs(query(collection(db, "collarini")))).forEach(docSnap => {
-      const data = docSnap.data();
-      if (!recentModified.some(c => c.id === docSnap.id)) collarini.push({ id: docSnap.id, ...data });
+    // Recupera tutti i dati dal database in tempo reale
+    const collariniRef = collection(db, "collarini");
+    const q = query(collariniRef, orderBy("name")); // Puoi anche applicare filtri se necessario
+
+    // Usa `onSnapshot` per ottenere gli aggiornamenti in tempo reale
+    onSnapshot(q, (snapshot) => {
+      // Pulisce la lista
+      container.innerHTML = "";
+
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        if (!recentModified.some(c => c.id === docSnap.id)) collarini.push({ id: docSnap.id, ...data });
+      });
+
+      // Filtra i dati
+      const filtered = collarini
+        .filter(c => (!searchTerm || c.name.toLowerCase().includes(searchTerm) || c.code.toLowerCase().includes(searchTerm)) &&
+          (!soloBassoStock || c.qty < 120) &&
+          (!soloQrVecchio || c.qrVecchio))
+        .sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0));
+
+      // Mostra gli articoli filtrati
+      if (filtered.length > 0) {
+        const otherSection = document.createElement('div');
+        otherSection.className = 'other-section';
+        otherSection.innerHTML = '<h3>Tutti i collarini</h3>';
+        filtered.forEach(c => otherSection.appendChild(createCollarinoItem(c)));
+        container.appendChild(otherSection);
+      }
+
+      // Mostra messaggio se non ci sono risultati
+      if (recentModified.length === 0 && filtered.length === 0) {
+        container.innerHTML = '<div class="no-results">Nessun collarino trovato</div>';
+      }
     });
 
-    const filtered = collarini
-      .filter(c => (!searchTerm || c.name.toLowerCase().includes(searchTerm) || c.code.toLowerCase().includes(searchTerm)) &&
-        (!soloBassoStock || c.qty < 120) &&
-        (!soloQrVecchio || c.qrVecchio))
-      .sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0));
-
-    if (filtered.length > 0) {
-      const otherSection = document.createElement('div');
-      otherSection.className = 'other-section';
-      otherSection.innerHTML = '<h3>Tutti i collarini</h3>';
-      filtered.forEach(c => otherSection.appendChild(createCollarinoItem(c)));
-      container.appendChild(otherSection);
-    }
-
-    if (recentModified.length === 0 && filtered.length === 0) {
-      container.innerHTML = '<div class="no-results">Nessun collarino trovato</div>';
-    }
   } catch (error) {
     console.error("Errore caricamento inventario:", error);
   } finally {
@@ -297,6 +364,7 @@ async function aggiornaLista() {
   }
 }
 
+// Funzione per creare l'elemento di un collarino
 function createCollarinoItem(c) {
   const translations = {
     usageCount: 'Utilizzi',
@@ -338,6 +406,108 @@ function createCollarinoItem(c) {
   return item;
 }
 
+// Mostra il resoconto in tempo reale
+function loadResoconto() {
+  console.log("Caricamento del resoconto in tempo reale...");
+
+  const container = document.getElementById("resocontoList");
+  if (!container) {
+    console.error("Elemento 'resocontoList' non trovato.");
+    return;
+  }
+
+  utils.showLoader(); // Mostra il loader
+  try {
+    console.log("Inizio recupero dei dati da Firestore...");
+
+    container.innerHTML = ""; // Pulisce prima di caricare i nuovi dati
+
+    // Recupera i dati da Firestore in tempo reale con onSnapshot
+    const collariniRef = collection(db, "collarini");
+
+    // Listener in tempo reale per i cambiamenti nella collezione "collarini"
+    onSnapshot(collariniRef, (snapshot) => {
+      console.log("Dati aggiornati in tempo reale:", snapshot);
+
+      if (snapshot.empty) {
+        console.warn("Nessun documento trovato nel resoconto.");
+      }
+
+      container.innerHTML = ""; // Pulisce prima di caricare i nuovi dati
+
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        console.log("Dati del collarino:", data);
+
+        const qty = data.qty || 0;
+        const minQty = data.minQty || 0; // Valore minimo dai dati
+        const maxQty = data.maxQty || 1500; // Valore massimo dai dati, default a 1500
+        const percent = Math.min((qty / maxQty) * 100, 100); // Calcola la percentuale di completamento
+
+        const item = document.createElement("div");
+        item.className = "collarino-item";
+
+        const name = document.createElement("span");
+        name.className = "collarino-name";
+        name.textContent = data.name;
+
+        if (qty <= 100) {
+          const asterisk = document.createElement("span");
+          asterisk.className = "collarino-asterisk";
+          asterisk.textContent = "*";
+          name.appendChild(asterisk);
+        }
+
+        const barContainer = document.createElement("div");
+        barContainer.className = "collarino-bar-container";
+
+        // Crea le etichette MIN e MAX dinamicamente
+        const barLabels = document.createElement("div");
+        barLabels.className = "collarino-bar-labels";
+        barLabels.innerHTML = `
+          <span class="collarino-min-label">${minQty}</span> <!-- Etichetta MIN dinamica -->
+          <span class="collarino-max-label">${maxQty}</span> <!-- Etichetta MAX dinamica -->
+        `;
+
+        const bar = document.createElement("div");
+        bar.className = "collarino-bar";
+        bar.style.width = percent + "%"; // Imposta la larghezza della barra
+
+        // Cambia colore della barra in base alla quantità
+        if (qty > 1000) {
+          bar.style.backgroundColor = "green";
+        } else if (qty > 500) {
+          bar.style.backgroundColor = "orange";
+        } else {
+          bar.style.backgroundColor = "red";
+        }
+
+        barContainer.appendChild(barLabels);
+        barContainer.appendChild(bar);
+
+        item.appendChild(name);
+        item.appendChild(barContainer);
+
+        container.appendChild(item);
+      });
+    });
+
+    console.log("Ascoltatore in tempo reale attivato!");
+  } catch (error) {
+    console.error("Errore durante il caricamento del resoconto:", error);
+    alert("Errore durante il caricamento del resoconto: " + error.message);
+  } finally {
+    utils.hideLoader(); // Nascondi il loader
+  }
+}
+
+
+
+
+
+
+
+
 // Modali
 function apriModale(collarino) {
   document.getElementById("editName").value = collarino.name;
@@ -352,6 +522,7 @@ function chiudiModale() {
   document.getElementById("selezioneModal").style.display = "none";
 }
 
+// Funzione per salvare le modifiche in tempo reale
 async function salvaModifiche() {
   utils.showLoader();
   const id = document.getElementById("editModal").getAttribute("data-id");
@@ -368,6 +539,7 @@ async function salvaModifiche() {
     const currentDoc = await getDoc(doc(db, "collarini", id));
     const currentData = currentDoc.data();
     
+    // Aggiorna il documento in Firestore
     await updateDoc(doc(db, "collarini", id), {
       name: newName,
       code: newCode,
@@ -376,6 +548,7 @@ async function salvaModifiche() {
       lastUpdated: serverTimestamp()
     });
 
+    // Registra l'azione di modifica
     await logAction("update", id, {
       oldName: currentData.name,
       newName,
@@ -384,14 +557,19 @@ async function salvaModifiche() {
       qrVecchio
     });
 
+    // Aggiorna il recente modificato
     const index = recentModified.findIndex(c => c.id === id);
     if (index !== -1) {
       recentModified[index] = { ...recentModified[index], name: newName, code: newCode, qrVecchio };
     }
-    
+
+    // Chiudi il modale
     chiudiModale();
+
+    // Ricarica la lista in tempo reale
     await aggiornaLista();
     await updateDashboard();
+
     utils.showSuccess();
   } catch (error) {
     alert("Errore durante il salvataggio: " + error.message);
@@ -400,6 +578,7 @@ async function salvaModifiche() {
   }
 }
 
+// Funzione per eliminare il collarino con conferma in tempo reale
 async function eliminaConConferma() {
   console.log("[DEBUG] Inizio funzione eliminaConConferma");
   
@@ -435,13 +614,19 @@ async function eliminaConConferma() {
     await deleteDoc(docRef);
     console.log("[DEBUG] Documento eliminato con successo");
 
+    // Registra l'azione di eliminazione
     await logAction("delete", id, docSnap.data());
+    
+    // Rimuovi il collarino dalla lista modificata recentemente
     recentModified = recentModified.filter(c => c.id !== id);
     
+    // Chiudi il modale
     chiudiModale();
+
+    // Ricarica la lista in tempo reale
     await aggiornaLista();
     await updateDashboard();
-    
+
     utils.showSuccess();
   } catch (error) {
     console.error("[DEBUG] Errore completo:", error);
@@ -754,4 +939,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Caricamento iniziale
   changeSection('inventory-section');
+
+ 
 });
