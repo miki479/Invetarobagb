@@ -1,52 +1,44 @@
-// service-worker.js
-
-const CACHE_NAME = 'collarini-inventory-v1';
-const urlsToCache = [
+const CACHE_NAME = 'collarini-cache-v1';
+const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/style.css',
   '/script.js',
-  '/icons/icon-192.png',
-  '/icons/icon-512x512.png',
+  '/resoconto.js',
+  '/main.js',
+  '/offline.html'
 ];
 
-self.addEventListener('install', (event) => {
+// Installazione
+self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+      .then(cache => cache.addAll(ASSETS_TO_CACHE))
+      .then(() => self.skipWaiting())
   );
 });
 
-self.addEventListener('activate', (event) => {
-  const cacheWhitelist = [CACHE_NAME];
+// Attivazione
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then((cacheNames) =>
+    caches.keys().then(keys =>
       Promise.all(
-        cacheNames.map((cacheName) => {
-          if (!cacheWhitelist.includes(cacheName)) {
-            return caches.delete(cacheName);
-          }
-        })
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
       )
     )
   );
 });
 
-self.addEventListener('fetch', (event) => {
+// Fetch con fallback
+self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((response) => {
-        if (response && response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return response;
-      });
-    })
+    caches.match(event.request)
+      .then(cached => {
+        return cached || fetch(event.request).catch(() => {
+          if (event.request.mode === 'navigate') {
+            return caches.match('/offline.html');
+          }
+        });
+      })
   );
 });

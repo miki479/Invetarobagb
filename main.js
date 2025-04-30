@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-messaging.js";
 
+// Config Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyD2LEAWh-YprhDjKC_jNwAasLDWFhbzPMw",
   authDomain: "inventario-6f07c.firebaseapp.com",
@@ -13,34 +13,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
 
-// Registrazione service worker
-navigator.serviceWorker.register('/firebase-messaging-sw.js').then((registration) => {
-  messaging.useServiceWorker(registration);
+// 1️⃣ Service Worker per modalità offline
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js')
+    .then(() => console.log('Service Worker offline registrato'))
+    .catch(err => console.error('Errore registrazione SW offline:', err));
+}
 
-  // Chiedi permesso per le notifiche
-  Notification.requestPermission().then((permission) => {
-    if (permission === 'granted') {
-      console.log('Permesso notifiche concesso.');
-      getToken(messaging, {
-        vapidKey: 'bxyYRDwHWuofEpDI428MVD9Is5cB9s8pDUwGDuzc4s8'
-      }).then((currentToken) => {
-        if (currentToken) {
-          console.log('FCM Token:', currentToken);
-          // Qui puoi inviare il token a Firestore o al tuo server se necessario
-        } else {
-          console.warn('Nessun token FCM disponibile.');
-        }
-      }).catch((err) => {
-        console.error('Errore recupero token:', err);
-      });
-    } else {
-      console.warn('Permesso notifiche negato.');
-    }
-  });
-});
-
-// Gestione messaggi in foreground
-onMessage(messaging, (payload) => {
-  console.log('Messaggio in foreground:', payload);
-  alert(`Notifica: ${payload.notification.title} - ${payload.notification.body}`);
-});
